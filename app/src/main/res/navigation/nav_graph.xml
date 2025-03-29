@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/botFragment">
+
+    <fragment
+        android:id="@+id/botFragment"
+        android:name="com.anand.hope.BotFragment"
+        android:label="fragment_bot"
+        tools:layout="@layout/fragment_bot" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.anand.hope.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.anand.hope.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/meshMapFragment"
+        android:name="com.anand.hope.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" />
+</navigation>

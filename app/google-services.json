@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "466167771934",
+    "project_id": "hope-86c62",
+    "storage_bucket": "hope-86c62.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:466167771934:android:7645942a8266cbfb67cf0f",
+        "android_client_info": {
+          "package_name": "com.anand.hope"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUrw7tUDRMpFiA8tlQJxCiGC5xDEBJNks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

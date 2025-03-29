@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Home"/>
+    <item
+        android:id="@+id/nav_map"
+        android:icon="@drawable/baseline_map_24"
+        android:title="Live Mesh Map"/>
+    <item
+        android:id="@+id/nav_Bot"
+        android:icon="@drawable/baseline_chat_24"
+        android:title="AI Triage Bot"/>
+    <item
+        android:id="@+id/nav_Profile"
+        android:icon="@drawable/baseline_person_24"
+        android:title="Profile"/>
+
+
+</menu>
