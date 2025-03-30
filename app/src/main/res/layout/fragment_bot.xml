@@ -5,10 +5,34 @@
     android:layout_height="match_parent"
     tools:context=".BotFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/userInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Describe the situation..." />
+
+        <Button
+            android:id="@+id/predictButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Predict Disaster" />
+
+        <TextView
+            android:id="@+id/predictionResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prediction will appear here"
+            android:textSize="18sp"
+            android:padding="10dp"/>
+    </LinearLayout>
+
+
+
 
 </FrameLayout>

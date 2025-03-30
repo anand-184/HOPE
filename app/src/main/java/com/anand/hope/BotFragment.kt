@@ -1,59 +1,91 @@
 package com.anand.hope
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.anand.hope.databinding.FragmentBotBinding
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import org.json.JSONObject
+import java.io.IOException
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [BotFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class BotFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var botBinding: FragmentBotBinding? = null
+    private val client = OkHttpClient()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        botBinding = FragmentBotBinding.inflate(inflater, container, false)
+        return botBinding!!.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        botBinding?.predictButton?.setOnClickListener {
+            val inputText = botBinding?.userInput?.text.toString()
+            if (inputText.isNotEmpty()) {
+                predictDisaster(inputText) { result ->
+                    activity?.runOnUiThread {
+                        botBinding?.predictionResult?.text = "Prediction: $result"
+                    }
+                }
+            } else {
+                botBinding?.predictionResult?.text = "Please enter a description."
+            }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bot, container, false)
-    }
+    private fun predictDisaster(userText: String, callback: (String) -> Unit) {
+        val url = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+        val apiKey = "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"  // Replace with your actual API key
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BotFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BotFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        val requestBody = RequestBody.create(
+            "application/json".toMediaTypeOrNull(),
+            "{\"inputs\": \"$userText\", \"parameters\": {\"candidate_labels\": [\"Flood\", \"Earthquake\", \"No Disaster\"]}}"
+        )
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $apiKey")  // Corrected API Key usage
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback("Error: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+
+                if (!responseData.isNullOrEmpty()) {
+                    try {
+                        val json = JSONObject(responseData)
+                        if (json.has("labels")) {
+                            val prediction = json.getJSONArray("labels").getString(0)
+                            callback(prediction)
+                        } else {
+                            callback("Error: Unexpected response format")
+                        }
+                    } catch (e: Exception) {
+                        callback("Error parsing response: ${e.message}")
+                    }
+                } else {
+                    callback("Error: Empty response from API")
                 }
             }
+        })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        botBinding = null
     }
 }
