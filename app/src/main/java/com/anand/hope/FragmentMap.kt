@@ -1,6 +1,7 @@
 package com.anand.hope
 
 import android.Manifest
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -17,14 +18,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.checkerframework.checker.units.qual.s
 import org.json.JSONArray
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.overlay.Polyline
@@ -41,6 +48,8 @@ class MapFragment : Fragment() {
     private lateinit var sendLocationButton: Button
     private lateinit var offlineMeshNetwork: OfflineMeshNetwork
     private lateinit var bluetoothAdapter: BluetoothAdapter
+    var firestore:FirebaseFirestore?=null
+    var sosModel:SOSModel?=null
 
     // Activity Result Launcher for Bluetooth
     private val enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -83,6 +92,11 @@ class MapFragment : Fragment() {
         // Setup Bluetooth
         setupBluetoothMesh()
 
+        sendLocationButton.setOnClickListener {
+            showSOSDialog()
+        }
+
+
         // Search Button Click
         searchButton.setOnClickListener {
             val locationQuery = searchEditText.text.toString()
@@ -105,6 +119,48 @@ class MapFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         offlineMeshNetwork.stopMeshNetwork()
+    }
+
+    private fun showSOSDialog() {
+        if (sosModel?.longitude == null || sosModel?.latitude == null) {
+            Toast.makeText(requireContext(), "Fetching location, please wait...", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_sos, null)
+        val locationTextView = dialogView.findViewById<TextView>(R.id.tvLocation)
+        val disasterTypeEditText = dialogView.findViewById<EditText>(R.id.etDisasterType)
+        val needsCheckBoxGroup = dialogView.findViewById<LinearLayout>(R.id.needsCheckboxGroup)
+        val btnSave = dialogView.findViewById<Button>(R.id.btnSave)
+
+        locationTextView.text = "Lat: ${sosModel?.latitude}, Lng: ${sosModel?.longitude}"
+
+        val selectedNeeds = mutableListOf<String>()
+        val needs = listOf("Water", "Food", "Medical Assistance", "Shelter", "Rescue")
+
+        for (need in needs) {
+            val checkBox = CheckBox(requireContext())
+            checkBox.text = need
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) selectedNeeds.add(need) else selectedNeeds.remove(need)
+            }
+            needsCheckBoxGroup.addView(checkBox)
+        }
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setTitle("Send SOS Alert")
+            .create()
+
+        btnSave.setOnClickListener {
+            val disasterType = disasterTypeEditText.text.toString().trim()
+            if (disasterType.isEmpty() || selectedNeeds.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+        }
+        alertDialog.show()
     }
 
     private fun requestPermissions() {
